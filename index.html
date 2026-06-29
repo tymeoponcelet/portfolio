@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="dark">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Poncelet Tyméo — Système & Réseau</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    :root {
+      --radius: 12px;
+      --radius-sm: 7px;
+      --red: #e5484d;
+      --red-dim: rgba(229,72,77,.09);
+      --red-border: rgba(229,72,77,.22);
+      --ease: cubic-bezier(.22,1,.36,1);
+    }
+
+    [data-theme="dark"] {
+      --bg1: #0c0c0e;
+      --bg2: #111113;
+      --bg3: #18181b;
+      --bg4: #212126;
+      --border: #27272a;
+      --border-hover: #3f3f46;
+      --fg-dim: #52525b;
+      --fg-mid: #a1a1aa;
+      --fg: #d4d4d8;
+      --fg-bright: #fafafa;
+      --nav-bg: rgba(12,12,14,.88);
+      --grid-line: rgba(255,255,255,.03);
+      --glow: rgba(229,72,77,.07);
+    }
+
+    [data-theme="light"] {
+      --bg1: #fafafa;
+      --bg2: #f4f4f5;
+      --bg3: #ffffff;
+      --bg4: #f0f0f2;
+      --border: #e4e4e7;
+      --border-hover: #d4d4d8;
+      --fg-dim: #a1a1aa;
+      --fg-mid: #71717a;
+      --fg: #3f3f46;
+      --fg-bright: #18181b;
+      --nav-bg: rgba(250,250,250,.88);
+      --grid-line: rgba(0,0,0,.045);
+      --glow: rgba(229,72,77,.05);
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg1);
+      color: var(--fg);
+      overflow-x: hidden;
+      transition: background .3s, color .3s;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 3px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border-hover); border-radius: 3px; }
+
+    /* Background layer */
+    .bg-layer {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      overflow: hidden;
+    }
+    /* ── ANIMATED GLOW HALOS ── */
+    .bg-glow,
+    .bg-glow2,
+    .bg-glow3 {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(70px);
+      will-change: transform;
+      pointer-events: none;
+    }
+    .bg-glow {
+      width: 900px; height: 900px;
+      top: -300px; right: -200px;
+      background: radial-gradient(circle, rgba(99,102,241,.55) 0%, rgba(99,102,241,.2) 40%, transparent 70%);
+      animation: drift1 18s ease-in-out infinite;
+    }
+    .bg-glow2 {
+      width: 750px; height: 750px;
+      bottom: -100px; left: -200px;
+      background: radial-gradient(circle, rgba(168,85,247,.5) 0%, rgba(139,92,246,.2) 40%, transparent 70%);
+      animation: drift2 24s ease-in-out infinite;
+    }
+    .bg-glow3 {
+      width: 600px; height: 600px;
+      top: 35%; left: 30%;
+      background: radial-gradient(circle, rgba(229,72,77,.38) 0%, rgba(229,72,77,.12) 40%, transparent 70%);
+      animation: drift3 20s ease-in-out infinite;
+    }
+    [data-theme="light"] .bg-glow  { background: radial-gradient(circle, rgba(99,102,241,.28) 0%, rgba(99,102,241,.08) 40%, transparent 70%); }
+    [data-theme="light"] .bg-glow2 { background: radial-gradient(circle, rgba(168,85,247,.22) 0%, rgba(139,92,246,.07) 40%, transparent 70%); }
+    [data-theme="light"] .bg-glow3 { background: radial-gradient(circle, rgba(229,72,77,.20) 0%, rgba(229,72,77,.06) 40%, transparent 70%); }
+    @keyframes drift1 {
+      0%   { transform: translate(0px, 0px) scale(1); }
+      20%  { transform: translate(-120px, 150px) scale(1.1); }
+      40%  { transform: translate(80px, 260px) scale(0.95); }
+      60%  { transform: translate(200px, 80px) scale(1.08); }
+      80%  { transform: translate(60px, -100px) scale(1.02); }
+      100% { transform: translate(0px, 0px) scale(1); }
+    }
+    @keyframes drift2 {
+      0%   { transform: translate(0px, 0px) scale(1); }
+      25%  { transform: translate(180px, -130px) scale(1.1); }
+      50%  { transform: translate(110px, -260px) scale(0.93); }
+      75%  { transform: translate(-80px, -130px) scale(1.07); }
+      100% { transform: translate(0px, 0px) scale(1); }
+    }
+    @keyframes drift3 {
+      0%   { transform: translate(0px, 0px) scale(1); }
+      25%  { transform: translate(-160px, -110px) scale(1.12); }
+      50%  { transform: translate(-210px, 160px) scale(0.92); }
+      75%  { transform: translate(110px, 190px) scale(1.06); }
+      100% { transform: translate(0px, 0px) scale(1); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .bg-glow, .bg-glow2, .bg-glow3 { animation: none; }
+    }
+
+    /* All content above bg */
+    nav, section, .divider, footer { position: relative; z-index: 1; }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      height: 58px; display: flex; align-items: center;
+      justify-content: space-between;
+      padding: 0 clamp(20px, 5vw, 80px);
+      background: var(--nav-bg);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      transition: background .3s, border-color .3s;
+    }
+    .nav-logo {
+      font-family: 'Poppins', sans-serif; font-weight: 700;
+      font-size: .88rem; letter-spacing: .04em; color: var(--fg-bright);
+      text-decoration: none; transition: color .15s;
+    }
+    .nav-logo .dot { color: var(--red); }
+    .nav-center { display: flex; gap: 32px; }
+    .nav-center a {
+      font-size: .78rem; color: var(--fg-mid); text-decoration: none;
+      font-weight: 500; transition: color .15s;
+    }
+    .nav-center a:hover { color: var(--fg-bright); }
+    .nav-right { display: flex; align-items: center; gap: 10px; }
+
+    /* Theme toggle */
+    .theme-toggle {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: var(--bg3); border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: border-color .15s, background .15s;
+    }
+    .theme-toggle:hover { border-color: var(--border-hover); background: var(--bg4); }
+    .t-icon { display: none; width: 16px; height: 16px; stroke: var(--fg-mid); fill: none; stroke-width: 2; stroke-linecap: round; transition: stroke .15s; }
+    .theme-toggle:hover .t-icon { stroke: var(--fg-bright); }
+    [data-theme="dark"]  .i-moon { display: block; }
+    [data-theme="light"] .i-sun  { display: block; }
+
+    .nav-cta {
+      background: var(--red); color: #fff;
+      padding: .44rem 1.15rem; border-radius: 100px;
+      font-size: .75rem; font-weight: 600; text-decoration: none;
+      font-family: 'Poppins', sans-serif;
+      transition: opacity .15s, transform .15s;
+    }
+    .nav-cta:hover { opacity: .86; transform: scale(1.03); }
+
+    .hamburger { display: none; background: none; border: none; cursor: pointer; padding: 4px; }
+    .hamburger span { display: block; width: 20px; height: 1.5px; background: var(--fg); margin: 5px 0; transition: all .25s; }
+
+    /* ── SECTION BASE ── */
+    section { padding: clamp(72px, 10vw, 128px) clamp(20px, 5vw, 80px); }
+    .section-label {
+      font-size: .67rem; font-weight: 600; letter-spacing: .18em;
+      text-transform: uppercase; color: var(--red); margin-bottom: 10px;
+    }
+    .section-title {
+      font-family: 'Poppins', sans-serif;
+      font-size: clamp(1.9rem, 4vw, 2.9rem);
+      font-weight: 700; color: var(--fg-bright);
+      line-height: 1.12; letter-spacing: -.025em;
+    }
+
+    /* ── HERO ── */
+    #hero {
+      min-height: 100vh; display: flex; align-items: center;
+      padding-top: 58px;
+    }
+    .hero-inner { max-width: 760px; }
+
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--red-dim); border: 1px solid var(--red-border);
+      color: var(--red); font-size: .68rem; font-weight: 600;
+      letter-spacing: .1em; text-transform: uppercase;
+      padding: .3rem .9rem; border-radius: 100px; margin-bottom: 28px;
+    }
+    .dot-live {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--red); flex-shrink: 0;
+      animation: blink 2.2s ease-in-out infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.2} }
+
+    .hero h1 {
+      font-family: 'Poppins', sans-serif;
+      font-size: clamp(3.2rem, 8vw, 5.8rem);
+      font-weight: 800; line-height: 1.0;
+      letter-spacing: -.035em; color: var(--fg-bright);
+      margin-bottom: 22px;
+    }
+    .hero h1 .accent { color: var(--red); }
+
+    .hero-tagline {
+      font-size: clamp(.92rem, 1.8vw, 1.05rem);
+      color: var(--fg-mid); line-height: 1.75;
+      max-width: 520px; margin-bottom: 8px;
+    }
+    .hero-sub {
+      font-size: .8rem; color: var(--fg-dim);
+      margin-bottom: 38px; font-style: italic;
+    }
+
+    .hero-btns { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 36px; }
+
+    .btn-primary {
+      background: var(--fg-bright); color: var(--bg1);
+      padding: .7rem 1.75rem; border-radius: 100px;
+      font-size: .84rem; font-weight: 600; text-decoration: none;
+      font-family: 'Poppins', sans-serif;
+      transition: opacity .15s, transform .15s;
+    }
+    .btn-primary:hover { opacity: .87; transform: scale(1.02); }
+
+    .btn-outline {
+      background: transparent; color: var(--fg);
+      border: 1px solid var(--border-hover);
+      padding: .7rem 1.75rem; border-radius: 100px;
+      font-size: .84rem; font-weight: 500; text-decoration: none;
+      transition: border-color .15s, color .15s;
+    }
+    .btn-outline:hover { border-color: var(--fg-mid); color: var(--fg-bright); }
+
+    .btn-ghost {
+      background: var(--bg3); color: var(--fg-mid);
+      border: 1px solid var(--border);
+      padding: .7rem 1.2rem; border-radius: 100px;
+      font-size: .81rem; font-weight: 500; text-decoration: none;
+      transition: border-color .15s, color .15s;
+      display: inline-flex; align-items: center; gap: 7px;
+    }
+    .btn-ghost:hover { border-color: var(--border-hover); color: var(--fg-bright); }
+    .btn-ghost svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 1.6; stroke-linecap: round; }
+
+    .hero-meta {
+      display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+    }
+    .hero-meta-item {
+      display: flex; align-items: center; gap: 6px;
+      font-size: .74rem; color: var(--fg-dim); font-weight: 500;
+      text-decoration: none; transition: color .15s;
+    }
+    .hero-meta-item:hover { color: var(--fg-mid); }
+    .hero-meta-item svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2; flex-shrink: 0; }
+    .meta-sep { color: var(--border-hover); }
+
+    /* ── SKILLS ── */
+    #skills {
+      background: transparent; /* Remplace var(--bg2) par transparent */
+      border-top: none;        /* Supprime la bordure supérieure */
+      border-bottom: none;     /* Supprime la bordure inférieure */
+      transition: color .3s;
+    }
+    .skills-grid {
+      margin-top: 48px;
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px;
+    }
+    .skill-card {
+      background: var(--bg3); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 22px 20px;
+      transition: border-color .2s, transform .22s var(--ease), background .2s;
+    }
+    .skill-card:hover { border-color: var(--border-hover); background: var(--bg4); transform: translateY(-3px); }
+    .skill-card-icon {
+      width: 34px; height: 34px; border-radius: var(--radius-sm);
+      background: var(--red-dim); border: 1px solid var(--red-border);
+      display: flex; align-items: center; justify-content: center; margin-bottom: 14px;
+    }
+    .skill-card-icon svg { width: 16px; height: 16px; stroke: var(--red); fill: none; stroke-width: 2; }
+    .skill-card h3 {
+      font-family: 'Poppins', sans-serif; font-size: .88rem;
+      font-weight: 600; color: var(--fg-bright); margin-bottom: 12px;
+    }
+    .skill-tags { display: flex; flex-wrap: wrap; gap: 5px; }
+    .skill-tag {
+      font-size: .68rem; padding: .22rem .65rem; border-radius: 100px;
+      background: var(--bg1); border: 1px solid var(--border);
+      color: var(--fg-mid); font-weight: 500; transition: background .3s, border-color .3s;
+    }
+
+    /* ── DIVIDER ── */
+    .divider {
+      padding: 30px clamp(20px, 5vw, 80px);
+      display: flex; align-items: center; gap: 20px;
+      position: relative; z-index: 1;
+    }
+    .divider-line { flex: 1; height: 1px; background: var(--border); }
+    .divider-text { font-size: .62rem; color: var(--fg-dim); letter-spacing: .16em; text-transform: uppercase; white-space: nowrap; }
+
+    /* ── PROJECTS ── */
+    .projects-grid {
+      margin-top: 48px;
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px;
+    }
+    .project-card {
+      background: var(--bg3); border: 1px solid var(--border);
+      border-radius: var(--radius); overflow: hidden; display: flex; flex-direction: column;
+      transition: border-color .22s, transform .22s var(--ease), background .2s;
+    }
+    .project-card:hover { border-color: var(--border-hover); transform: translateY(-4px); }
+    .project-thumb {
+      height: 155px; display: flex; align-items: center; justify-content: center;
+      border-bottom: 1px solid var(--border); position: relative; overflow: hidden;
+    }
+    .thumb-win  { background: linear-gradient(135deg, #111116 0%, #1c1c2a 100%); }
+    .thumb-fire { background: linear-gradient(135deg, #16100a 0%, #201810 100%); }
+    .thumb-mon  { background: linear-gradient(135deg, #0a1610 0%, #102018 100%); }
+    [data-theme="light"] .thumb-win  { background: linear-gradient(135deg, #e8e8f4 0%, #d8d8ec 100%); }
+    [data-theme="light"] .thumb-fire { background: linear-gradient(135deg, #f4ede8 0%, #ecddd0 100%); }
+    [data-theme="light"] .thumb-mon  { background: linear-gradient(135deg, #e8f4ec 0%, #d0ecd8 100%); }
+    .thumb-icon { opacity: .2; }
+    .project-thumb-label {
+      position: absolute; bottom: 10px; left: 12px;
+      font-size: .6rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase;
+      color: var(--fg-dim); background: var(--bg3); border: 1px solid var(--border);
+      padding: .18rem .55rem; border-radius: 100px;
+    }
+    .project-body { padding: 20px; flex: 1; display: flex; flex-direction: column; gap: 9px; }
+    .project-num { font-size: .62rem; font-weight: 600; color: var(--red); letter-spacing: .12em; text-transform: uppercase; }
+    .project-title {
+      font-family: 'Poppins', sans-serif; font-size: .97rem;
+      font-weight: 600; color: var(--fg-bright); line-height: 1.3;
+    }
+    .project-desc { font-size: .79rem; color: var(--fg-mid); line-height: 1.68; flex: 1; }
+    .project-techs { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 4px; }
+    .tech-tag {
+      font-size: .63rem; padding: .18rem .55rem; border-radius: 100px;
+      background: var(--red-dim); border: 1px solid var(--red-border);
+      color: var(--red); font-weight: 600;
+    }
+
+    /* ── CONTACT ── */
+    #contact {
+      background: transparent; /* Remplace var(--bg2) par transparent */
+      border-top: none;        /* Supprime la bordure supérieure */
+      transition: color .3s;
+    }
+    .contact-wrap { max-width: 580px; }
+    .contact-wrap .section-title { margin-bottom: 12px; }
+    .contact-wrap > p {
+      font-size: .93rem; color: var(--fg-mid); line-height: 1.75; margin-bottom: 30px;
+    }
+    .contact-cards { display: flex; flex-direction: column; gap: 9px; margin-bottom: 26px; }
+    .contact-card {
+      display: flex; align-items: center; gap: 14px;
+      background: var(--bg3); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 13px 17px;
+      text-decoration: none; color: var(--fg);
+      transition: border-color .15s, transform .18s var(--ease);
+    }
+    .contact-card:hover { border-color: var(--border-hover); transform: translateX(4px); }
+    .contact-card-icon {
+      width: 34px; height: 34px; border-radius: var(--radius-sm);
+      background: var(--bg1); border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .contact-card-icon svg { width: 15px; height: 15px; stroke: var(--fg-mid); fill: none; stroke-width: 2; }
+    .contact-card-info { flex: 1; }
+    .contact-card-label { font-size: .65rem; color: var(--fg-dim); font-weight: 500; margin-bottom: 2px; }
+    .contact-card-val { font-size: .86rem; color: var(--fg-bright); font-weight: 500; }
+    .contact-card-arrow { color: var(--fg-dim); font-size: .78rem; transition: transform .15s; }
+    .contact-card:hover .contact-card-arrow { transform: translate(2px,-2px); }
+
+    .cv-download {
+      display: inline-flex; align-items: center; gap: 12px;
+      background: var(--bg3); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 14px 19px;
+      text-decoration: none; color: var(--fg-bright); font-weight: 500; font-size: .87rem;
+      transition: border-color .15s, transform .15s var(--ease);
+    }
+    .cv-download:hover { border-color: var(--red-border); transform: scale(1.015); }
+    .cv-dl-icon {
+      width: 34px; height: 34px; border-radius: var(--radius-sm);
+      background: var(--red-dim); border: 1px solid var(--red-border);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .cv-dl-icon svg { width: 14px; height: 14px; stroke: var(--red); fill: none; stroke-width: 2; stroke-linecap: round; }
+    .cv-dl-meta { display: flex; flex-direction: column; }
+    .cv-dl-sub { font-size: .68rem; color: var(--fg-dim); font-weight: 400; }
+
+    /* ── FOOTER ── */
+    footer {
+      padding: 22px clamp(20px, 5vw, 80px);
+      border-top: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: center;
+      position: relative; z-index: 1;
+      transition: border-color .3s;
+    }
+    .footer-name {
+      font-family: 'Poppins', sans-serif; font-size: .78rem;
+      font-weight: 600; color: var(--fg-mid);
+    }
+    .footer-name .dot { color: var(--red); }
+    .footer-copy { font-size: .7rem; color: var(--fg-dim); }
+
+    /* ── ANIMATIONS ── */
+    /* Hero stagger */
+    .fu { opacity: 0; transform: translateY(20px); animation: fu .65s var(--ease) forwards; }
+    @keyframes fu { to { opacity:1; transform:none; } }
+    .d1{animation-delay:.06s;} .d2{animation-delay:.18s;} .d3{animation-delay:.3s;} .d4{animation-delay:.44s;} .d5{animation-delay:.57s;}
+
+    /* Scroll reveal */
+    .reveal {
+      opacity: 0; transform: translateY(24px);
+      transition: opacity .6s var(--ease), transform .6s var(--ease);
+    }
+    .reveal.visible { opacity: 1; transform: none; }
+    .rd1{transition-delay:.07s;} .rd2{transition-delay:.15s;} .rd3{transition-delay:.22s;}
+
+    /* ── MOBILE ── */
+    @media (max-width: 680px) {
+      .nav-center { display: none; }
+      .hamburger { display: block; }
+      footer { flex-direction: column; gap: 6px; text-align: center; }
+    }
+
+    .mobile-overlay {
+      display: none; position: fixed; inset: 0; z-index: 200;
+      background: var(--bg1); flex-direction: column;
+      align-items: center; justify-content: center; gap: 28px;
+      transition: background .3s;
+    }
+    .mobile-overlay.open { display: flex; }
+    .mobile-overlay a {
+      font-family: 'Poppins', sans-serif; font-size: 1.7rem; font-weight: 700;
+      color: var(--fg-bright); text-decoration: none; transition: color .15s;
+    }
+    .mobile-overlay a:hover { color: var(--red); }
+    .mobile-close { position: absolute; top: 18px; right: 20px; background: none; border: none; color: var(--fg-mid); font-size: 1.3rem; cursor: pointer; }
+
+    /* ── PROJECT CARD CLICKABLE ── */
+    .project-card { cursor: pointer; }
+    .project-card .project-open-hint {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: .63rem; color: var(--fg-dim); font-weight: 500;
+      margin-top: 6px; transition: color .15s;
+    }
+    .project-card:hover .project-open-hint { color: var(--red); }
+    .project-open-hint svg { width: 11px; height: 11px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; }
+
+    /* ── MODAL OVERLAY ── */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0; z-index: 300;
+      background: rgba(0,0,0,.72); backdrop-filter: blur(8px);
+      align-items: center; justify-content: center;
+      padding: clamp(16px,4vw,40px);
+      transition: opacity .25s;
+    }
+    .modal-overlay.open { display: flex; animation: mfade .22s ease forwards; }
+    @keyframes mfade { from{opacity:0} to{opacity:1} }
+
+    .modal-box {
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: 16px; width: 100%; max-width: 740px;
+      max-height: 88vh; overflow-y: auto;
+      box-shadow: 0 32px 80px rgba(0,0,0,.55);
+      animation: mslide .28s var(--ease) forwards;
+      position: relative;
+    }
+    @keyframes mslide { from{transform:translateY(28px);opacity:0} to{transform:none;opacity:1} }
+
+    .modal-header {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      gap: 16px; padding: 24px 24px 0;
+    }
+    .modal-header-left { display: flex; flex-direction: column; gap: 6px; }
+    .modal-num { font-size: .62rem; font-weight: 700; color: var(--red); letter-spacing: .14em; text-transform: uppercase; }
+    .modal-title {
+      font-family: 'Poppins', sans-serif; font-size: clamp(1.2rem,3vw,1.6rem);
+      font-weight: 700; color: var(--fg-bright); line-height: 1.15;
+    }
+    .modal-subtitle { font-size: .8rem; color: var(--fg-mid); margin-top: 2px; }
+
+    .modal-close {
+      width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
+      background: var(--bg4); border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; color: var(--fg-mid);
+      font-size: 1rem; line-height: 1; transition: border-color .15s, color .15s;
+    }
+    .modal-close:hover { border-color: var(--red-border); color: var(--red); }
+
+    .modal-thumb {
+      height: 140px; margin: 20px 24px 0;
+      border-radius: var(--radius); border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      position: relative; overflow: hidden;
+    }
+    .modal-thumb .thumb-icon { opacity: .18; }
+    .modal-thumb-label {
+      position: absolute; bottom: 10px; left: 12px;
+      font-size: .6rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase;
+      color: var(--fg-dim); background: var(--bg3); border: 1px solid var(--border);
+      padding: .18rem .55rem; border-radius: 100px;
+    }
+
+    .modal-body { padding: 20px 24px 24px; display: flex; flex-direction: column; gap: 20px; }
+
+    .modal-techs { display: flex; flex-wrap: wrap; gap: 6px; }
+
+    .modal-section { display: flex; flex-direction: column; gap: 9px; }
+    .modal-section-title {
+      font-family: 'Poppins', sans-serif; font-size: .72rem;
+      font-weight: 700; color: var(--fg-dim); letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+    .modal-section p {
+      font-size: .84rem; color: var(--fg-mid); line-height: 1.72;
+    }
+
+    .modal-steps { display: flex; flex-direction: column; gap: 10px; }
+    .modal-step {
+      display: flex; gap: 12px; align-items: flex-start;
+      padding: 12px 14px; border-radius: var(--radius-sm);
+      background: var(--bg3); border: 1px solid var(--border);
+    }
+    .modal-step-num {
+      width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0;
+      background: var(--red-dim); border: 1px solid var(--red-border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: .62rem; font-weight: 700; color: var(--red);
+    }
+    .modal-step-text { font-size: .81rem; color: var(--fg); line-height: 1.6; }
+    .modal-step-text strong { color: var(--fg-bright); font-weight: 600; }
+
+    .modal-pills { display: flex; flex-wrap: wrap; gap: 7px; }
+    .modal-pill {
+      font-size: .73rem; padding: .3rem .85rem; border-radius: 100px;
+      background: var(--bg3); border: 1px solid var(--border);
+      color: var(--fg); font-weight: 500;
+    }
+
+    .modal-result {
+      padding: 14px 16px; border-radius: var(--radius-sm);
+      background: rgba(68,204,136,.07); border: 1px solid rgba(68,204,136,.2);
+      font-size: .82rem; color: #44cc88; line-height: 1.65;
+    }
+    [data-theme="light"] .modal-result { background: rgba(22,160,80,.07); border-color: rgba(22,160,80,.2); color: #16a050; }
+
+    .modal-docs { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+    .modal-doc {
+      display: inline-flex; align-items: center; gap: 7px;
+      font-size: .75rem; color: var(--fg-mid); font-weight: 500;
+      padding: .32rem .9rem; border-radius: 100px;
+      background: var(--bg3); border: 1px solid var(--border);
+    }
+    .modal-doc svg { width: 12px; height: 12px; stroke: var(--red); fill: none; stroke-width: 2; flex-shrink: 0; }
+  </style>
+</head>
+<body>
+
+<!-- Background decorative layer -->
+<div class="bg-layer">
+  <div class="bg-glow"></div>
+  <div class="bg-glow2"></div>
+  <div class="bg-glow3"></div>
+</div>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-logo" href="#hero">Tyméo<span class="dot">.</span></a>
+  <div class="nav-center">
+    <a href="#skills">Compétences</a>
+    <a href="#projects">Projets</a>
+    <a href="#contact">Contact</a>
+  </div>
+  <div class="nav-right">
+    <button class="theme-toggle" id="themeToggle" aria-label="Basculer le thème">
+      <svg class="t-icon i-moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      <svg class="t-icon i-sun" viewBox="0 0 24 24" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+    </button>
+    <a class="nav-cta" href="#contact">Me contacter</a>
+    <button class="hamburger" id="hamburger" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- MOBILE MENU -->
+<div class="mobile-overlay" id="mobileOverlay">
+  <button class="mobile-close" id="mobileClose">✕</button>
+  <a href="#skills" onclick="closeMobile()">Compétences</a>
+  <a href="#projects" onclick="closeMobile()">Projets</a>
+  <a href="#contact" onclick="closeMobile()">Contact</a>
+  <a href="CV.pdf" download style="font-size:1rem;color:var(--fg-mid);">Télécharger le CV ↓</a>
+</div>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-inner">
+    <div class="hero-badge fu d1">
+      <span class="dot-live"></span>
+      Disponible pour un stage
+    </div>
+
+    <h1 class="fu d2">
+      Poncelet<br><span class="accent">Tyméo</span>
+    </h1>
+
+    <p class="hero-tagline fu d3">
+      Étudiant en BTS SIO — Systèmes, Réseaux &amp; Cybersécurité.<br>
+      Je déploie, configure et sécurise des infrastructures réseau.
+    </p>
+    <p class="hero-sub fu d3">Pôle Sup DE LA SALLE · 1<sup>re</sup> année · option SISR</p>
+
+    <div class="hero-btns fu d4">
+      <a class="btn-primary" href="#contact">Me contacter</a>
+      <a class="btn-outline" href="#projects">Voir les projets</a>
+      <a class="btn-ghost" href="CV.pdf" download>
+        <svg viewBox="0 0 12 12"><path d="M6 1v7M3 5l3 3 3-3M1 10h10"/></svg>
+        CV PDF
+      </a>
+    </div>
+
+    <div class="hero-meta fu d5">
+      <a class="hero-meta-item" href="https://www.linkedin.com/in/tyméo-poncelet-83b667383" target="_blank">
+        <svg viewBox="0 0 24 24"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
+        LinkedIn
+      </a>
+      <span class="meta-sep">·</span>
+      <a class="hero-meta-item" href="mailto:tymeo.poncelet@gmail.com">
+        <svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 7 10 7 10-7"/></svg>
+        tymeo.poncelet@gmail.com
+      </a>
+      <span class="meta-sep">·</span>
+      <a class="hero-meta-item" href="tel:0610253234">
+        <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.27h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 8.91a16 16 0 0 0 6 6l.91-.91a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 21.73 16z"/></svg>
+        06 10 25 32 34
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- SKILLS -->
+<section id="skills">
+  <div class="section-label reveal">Compétences</div>
+  <h2 class="section-title reveal rd1">Ce que je maîtrise</h2>
+  <div class="skills-grid">
+    <div class="skill-card reveal rd1">
+      <div class="skill-card-icon">
+        <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+      </div>
+      <h3>Infrastructure & Réseau</h3>
+      <div class="skill-tags">
+        <span class="skill-tag">Windows Server</span>
+        <span class="skill-tag">Active Directory</span>
+        <span class="skill-tag">Cisco Packet Tracer</span>
+        <span class="skill-tag">Adressage IP / VLSM</span>
+        <span class="skill-tag">VirtualBox</span>
+      </div>
+    </div>
+    <div class="skill-card reveal rd2">
+      <div class="skill-card-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      </div>
+      <h3>Cybersécurité</h3>
+      <div class="skill-tags">
+        <span class="skill-tag">Kali Linux</span>
+        <span class="skill-tag">Wireshark</span>
+        <span class="skill-tag">Hashcat</span>
+        <span class="skill-tag">Hydra</span>
+        <span class="skill-tag">Chiffrement / Hashage</span>
+      </div>
+    </div>
+    <div class="skill-card reveal rd3">
+      <div class="skill-card-icon">
+        <svg viewBox="0 0 24 24"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+      </div>
+      <h3>Systèmes Linux</h3>
+      <div class="skill-tags">
+        <span class="skill-tag">Debian / Ubuntu</span>
+        <span class="skill-tag">Gestion des droits</span>
+        <span class="skill-tag">Système de fichiers</span>
+        <span class="skill-tag">GLPI</span>
+        <span class="skill-tag">Zabbix</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider">
+  <div class="divider-line"></div>
+  <span class="divider-text">Projets réalisés en BTS SIO</span>
+  <div class="divider-line"></div>
+</div>
+
+<!-- PROJECTS -->
+<section id="projects" style="padding-top:0;">
+  <div class="section-label reveal">Projets</div>
+  <h2 class="section-title reveal rd1">Réalisations concrètes</h2>
+  <div class="projects-grid">
+
+    <div class="project-card reveal rd1" data-modal="1">
+      <div class="project-thumb thumb-win">
+        <svg class="thumb-icon" width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="#8888ee" stroke-width=".8"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M2 20h20M12 17v3"/><circle cx="12" cy="10" r="3"/></svg>
+        <span class="project-thumb-label">Infra Windows</span>
+      </div>
+      <div class="project-body">
+        <span class="project-num">01</span>
+        <h3 class="project-title">Déploiement Active Directory</h3>
+        <p class="project-desc">Installation et configuration d'un Windows Server avec Active Directory. Gestion des utilisateurs, groupes, politiques GPO et intégration au domaine.</p>
+        <div class="project-techs">
+          <span class="tech-tag">Windows Server</span>
+          <span class="tech-tag">Active Directory</span>
+          <span class="tech-tag">GPO</span>
+        </div>
+        <span class="project-open-hint"><svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Voir le détail</span>
+      </div>
+    </div>
+
+    <div class="project-card reveal rd2" data-modal="2">
+      <div class="project-thumb thumb-fire">
+        <svg class="thumb-icon" width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="#ff8844" stroke-width=".8"><path d="M12 22c5.52 0 10-4.48 10-10S17.52 2 12 2 2 6.48 2 12s4.48 10 10 10z"/><path d="M12 8v4M12 16h.01"/></svg>
+        <span class="project-thumb-label">Pare-feu</span>
+      </div>
+      <div class="project-body">
+        <span class="project-num">02</span>
+        <h3 class="project-title">Pare-feu pfSense</h3>
+        <p class="project-desc">Installation et configuration d'un pare-feu pfSense. Mise en place de règles de filtrage, segmentation réseau par VLANs et supervision du trafic.</p>
+        <div class="project-techs">
+          <span class="tech-tag">pfSense</span>
+          <span class="tech-tag">VLAN</span>
+          <span class="tech-tag">Firewall</span>
+        </div>
+        <span class="project-open-hint"><svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Voir le détail</span>
+      </div>
+    </div>
+
+    <div class="project-card reveal rd3" data-modal="3">
+      <div class="project-thumb thumb-mon">
+        <svg class="thumb-icon" width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="#44cc88" stroke-width=".8"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        <span class="project-thumb-label">Supervision</span>
+      </div>
+      <div class="project-body">
+        <span class="project-num">03</span>
+        <h3 class="project-title">Supervision avec Zabbix</h3>
+        <p class="project-desc">Déploiement de Zabbix pour la supervision d'infrastructures réseau. Configuration d'agents, dashboards et alertes automatisées.</p>
+        <div class="project-techs">
+          <span class="tech-tag">Zabbix</span>
+          <span class="tech-tag">Linux</span>
+          <span class="tech-tag">SNMP</span>
+        </div>
+        <span class="project-open-hint"><svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Voir le détail</span>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact">
+  <div class="contact-wrap reveal">
+    <div class="section-label">Contact</div>
+    <h2 class="section-title">Travaillons ensemble</h2>
+    <p>Je recherche un stage en Système, Réseau ou Cybersécurité pour 2025–2026. N'hésitez pas à me contacter directement.</p>
+
+    <div class="contact-cards">
+      <a class="contact-card" href="mailto:tymeo.poncelet@gmail.com">
+        <div class="contact-card-icon">
+          <svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 7 10 7 10-7"/></svg>
+        </div>
+        <div class="contact-card-info">
+          <div class="contact-card-label">Email</div>
+          <div class="contact-card-val">tymeo.poncelet@gmail.com</div>
+        </div>
+        <span class="contact-card-arrow">↗</span>
+      </a>
+      <a class="contact-card" href="tel:0610253234">
+        <div class="contact-card-icon">
+          <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.27h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 8.91a16 16 0 0 0 6 6l.91-.91a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 21.73 16z"/></svg>
+        </div>
+        <div class="contact-card-info">
+          <div class="contact-card-label">Téléphone</div>
+          <div class="contact-card-val">06 10 25 32 34</div>
+        </div>
+        <span class="contact-card-arrow">↗</span>
+      </a>
+      <a class="contact-card" href="https://www.linkedin.com/in/tyméo-poncelet-83b667383" target="_blank">
+        <div class="contact-card-icon">
+          <svg viewBox="0 0 24 24"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
+        </div>
+        <div class="contact-card-info">
+          <div class="contact-card-label">LinkedIn</div>
+          <div class="contact-card-val">Poncelet Tyméo</div>
+        </div>
+        <span class="contact-card-arrow">↗</span>
+      </a>
+    </div>
+
+    <a class="cv-download" href="CV.pdf" download>
+      <div class="cv-dl-icon">
+        <svg viewBox="0 0 12 12"><path d="M6 1v7M3 5l3 3 3-3M1 10h10"/></svg>
+      </div>
+      <div class="cv-dl-meta">
+        <span>Télécharger le CV</span>
+        <span class="cv-dl-sub">PDF · 2025–2026</span>
+      </div>
+    </a>
+  </div>
+</section>
+
+<!-- PROJECT MODALS -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal-box" id="modalBox">
+    <div class="modal-header">
+      <div class="modal-header-left">
+        <span class="modal-num" id="mNum"></span>
+        <h2 class="modal-title" id="mTitle"></h2>
+        <p class="modal-subtitle" id="mSubtitle"></p>
+      </div>
+      <button class="modal-close" id="modalClose">✕</button>
+    </div>
+    <div class="modal-thumb" id="mThumb"></div>
+    <div class="modal-body" id="mBody"></div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-name">Poncelet Tyméo<span class="dot">.</span></div>
+  <div class="footer-copy">BTS SIO SISR · 2025–2026</div>
+</footer>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+  // Theme toggle (persists via localStorage)
+  const html = document.documentElement;
+  const saved = localStorage.getItem('pt-theme') || 'dark';
+  html.setAttribute('data-theme', saved);
+
+  document.getElementById('themeToggle').addEventListener('click', () => {
+    const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    html.setAttribute('data-theme', next);
+    localStorage.setItem('pt-theme', next);
+  });
+
+  // Mobile menu
+  document.getElementById('hamburger').addEventListener('click', () => {
+    document.getElementById('mobileOverlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  });
+  document.getElementById('mobileClose').addEventListener('click', closeMobile);
+  function closeMobile() {
+    document.getElementById('mobileOverlay').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+  document.querySelectorAll('.mobile-overlay a').forEach(a => {
+    a.addEventListener('click', closeMobile);
+  });
+
+  // ── MODAL ──
+  const MODALS = {
+    1: {
+      num: '01', title: 'Déploiement Active Directory',
+      subtitle: 'BTS SIO – B1.1 & B2 Systèmes · Windows Server 2016/2019',
+      thumbClass: 'thumb-win',
+      thumbStroke: '#8888ee',
+      thumbPath: '<rect x="2" y="3" width="20" height="14" rx="2"/><path d="M2 20h20M12 17v3"/><circle cx="12" cy="10" r="3"/>',
+      thumbLabel: 'Infra Windows',
+      techs: ['Windows Server 2016','Active Directory (AD DS)','DNS','GPO','PowerShell','Profils itinérants','Scripts batch'],
+      context: "Dans le cadre du BTS SIO SISR, déploiement complet d'une infrastructure Active Directory sur Windows Server 2016 Datacenter. L'objectif est d'établir un annuaire centralisé pour gérer les utilisateurs, ordinateurs et politiques de sécurité d'un domaine.",
+      steps: [
+        { title: 'Installation du rôle AD DS', desc: "Ajout du rôle <strong>Services de domaine Active Directory</strong> via le Gestionnaire de serveur, puis promotion du serveur en contrôleur de domaine." },
+        { title: 'Configuration DNS', desc: "Installation et configuration du serveur DNS intégré à l'AD. Paramétrage de l'interface réseau du serveur pour pointer sur lui-même (<code>127.0.0.1</code>) comme DNS préféré." },
+        { title: 'Création des OUs, groupes et utilisateurs', desc: "Création de deux Unités d'Organisation (<strong>Admin</strong> et <strong>Peda</strong>), des groupes <strong>Profs</strong> et <strong>Etudiants</strong>, et ajout d'utilisateurs via l'interface graphique puis via la commande <code>dsadd</code> en CLI." },
+        { title: 'Profils itinérants & dossiers de base', desc: "Création des dossiers partagés <code>\\\\SERVEUR\\Profils</code> et <code>\\\\SERVEUR\\Dossiersdebase</code>. Affectation des chemins dans les propriétés de profil de chaque utilisateur avec la variable <code>%USERNAME%</code>." },
+        { title: 'Scripts de connexion batch', desc: "Rédaction d'un script <code>script1.bat</code> déposé dans <code>SYSVOL\\scripts</code> qui monte automatiquement les lecteurs réseau <strong>X:</strong> (lecture) et <strong>Y:</strong> (écriture) à l'ouverture de session." },
+        { title: 'Import en masse via DSADD & CSVDE', desc: "Automatisation de la création des comptes étudiants de la classe SIO via un script <code>.bat</code> lisant un fichier CSV, et test de l'import via <code>csvde.exe</code>." },
+        { title: 'Intégration du client Windows 10', desc: "Jonction du poste Windows 10 au domaine via <em>Paramètres > Accès professionnel</em>. Vérification de la présence du compte ordinateur dans l'annuaire et test de connexion avec un utilisateur du domaine." },
+      ],
+      result: "✓ Domaine fonctionnel avec 3 lecteurs réseau montés automatiquement à la connexion. Annuaire peuplé de l'ensemble des étudiants SIO via script. Profils itinérants opérationnels.",
+      docs: ['TP01 : AD Avancé – Partie I','TP03 : Gestion AD via Script','Td07 : Intro Active Directory & DNS']
+    },
+    2: {
+      num: '02', title: 'Pare-feu & Routage pfSense',
+      subtitle: 'BTS SIO – AP2 Mission 6 · Routeurs virtuels',
+      thumbClass: 'thumb-fire',
+      thumbStroke: '#ff8844',
+      thumbPath: '<path d="M12 22c5.52 0 10-4.48 10-10S17.52 2 12 2 2 6.48 2 12s4.48 10 10 10z"/><path d="M12 8v4M12 16h.01"/>',
+      thumbLabel: 'Pare-feu',
+      techs: ['pfSense (FreeBSD)','VyOS','NAT / Outbound NAT','Règles de filtrage WAN/LAN','Routage statique','OpenVPN','VirtualBox'],
+      context: "Étude comparative entre VyOS et pfSense dans le cadre d'un TP réseau BTS SIO. Objectif : interconnecter deux sous-réseaux virtuels distincts via un WAN commun du labo SISR. pfSense a été retenu pour sa prise en main rapide.",
+      steps: [
+        { title: 'Étude comparative VyOS / pfSense', desc: "Analyse des deux solutions open source : <strong>VyOS</strong> (CLI-only, Debian, 512 Mo RAM) vs <strong>pfSense</strong> (WebGUI + CLI, FreeBSD, 1–2 Go RAM). pfSense sélectionné pour son interface web intuitive et sa communauté francophone." },
+        { title: 'Création des VMs', desc: "Deux machines virtuelles VirtualBox par sous-réseau : une pour le routeur pfSense (2 interfaces : <strong>WAN en accès pont</strong>, <strong>LAN en réseau interne</strong>) et une pour le terminal client." },
+        { title: 'Installation guidée pfSense', desc: "Démarrage sur l'ISO pfSense, installation via le terminal, redémarrage et adressage des interfaces WAN/LAN via le menu (options 1 et 2). Accès à l'interface web sur l'IP LAN." },
+        { title: 'Configuration NAT & interfaces', desc: "Vérification du statut des interfaces via <em>Status > Interfaces</em>. Contrôle du NAT Outbound dans <em>Firewall > NAT > Outbound</em> pour la sortie du LAN vers le WAN." },
+        { title: 'Règles de filtrage Firewall', desc: "Création des règles autorisant les protocoles <strong>TCP/UDP/ICMP</strong> depuis le WAN vers le LAN et inversement. Configuration dans <em>Firewall > Rules > WAN</em> et <em>LAN</em>." },
+        { title: 'Routes statiques inter-réseaux', desc: "Ajout d'une route statique dans <em>System > Routing > Static Routes</em> pointant vers le sous-réseau distant via la gateway WAN du routeur distant." },
+        { title: 'Tests de connectivité', desc: "Vérification par <code>ping</code> et <code>traceroute</code> depuis le terminal client vers l'IP du sous-réseau distant. Validation du chemin de routage complet entre les deux sous-réseaux." },
+      ],
+      result: "✓ Deux sous-réseaux virtuels interconnectés via le WAN labo. Ping et traceroute fonctionnels entre les deux terminaux. NAT et règles de filtrage opérationnels.",
+      docs: ['Dossier AP2 – Routeurs Virtuels (VyOS vs pfSense)']
+    },
+    3: {
+      num: '03', title: 'Supervision avec Zabbix & Grafana',
+      subtitle: 'BTS SIO – AP2 Mission 5 · Supervision ALIVE_IP',
+      thumbClass: 'thumb-mon',
+      thumbStroke: '#44cc88',
+      thumbPath: '<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>',
+      thumbLabel: 'Supervision',
+      techs: ['Zabbix 7.4','Grafana','Ubuntu Server 22.04','MySQL','fping','Agent Zabbix','ICMP / SNMP','Apache2'],
+      context: "Mission de supervision de la connexion internet d'un organisme (M2L). Déploiement de Zabbix sur un serveur Ubuntu pour surveiller la disponibilité des équipements par ping ICMP et l'espace disque via agent, avec visualisation dans Grafana.",
+      steps: [
+        { title: 'Installation Zabbix 7.4 sur Ubuntu', desc: "Téléchargement du paquet <code>zabbix-release</code> depuis le dépôt officiel, installation du serveur, frontend PHP, conf Apache et agent : <code>apt install zabbix-server-mysql zabbix-frontend-php zabbix-apache-conf zabbix-agent</code>." },
+        { title: 'Configuration de la base de données MySQL', desc: "Création de la base <code>zabbix</code> avec le jeu de caractères <code>utf8mb4</code>, création de l'utilisateur MySQL dédié, import du schéma SQL initial, puis renseignement du mot de passe dans <code>zabbix_server.conf</code>." },
+        { title: 'Installation & configuration de fping', desc: "Installation de <code>fping</code> pour les tests ICMP depuis l'interface Zabbix (<code>apt install fping</code>), configuration des droits (<code>chmod 4750</code>) et vérification du chemin dans <code>FpingLocation</code> du fichier de conf." },
+        { title: 'Création des hôtes & templates', desc: "Ajout des hôtes dans l'interface web Zabbix avec le template <strong>ICMP Ping</strong>. Installation de l'agent Zabbix Windows sur les postes clients. Ajout du template <strong>Windows by Zabbix Agent</strong> pour la surveillance disque." },
+        { title: 'Graphiques ICMP & surveillance disque', desc: "Création de graphiques personnalisés (ICMP loss, ICMP ping, ICMP response time) par hôte. Vérification de l'espace disque via le tableau de bord Zabbix (<em>Surveillance > Tableau de bord</em>)." },
+        { title: 'Installation & configuration Grafana', desc: "Installation du dépôt Grafana et du serveur (<code>apt install grafana</code>), démarrage du service sur le port 3000. Installation du plugin <strong>Zabbix pour Grafana</strong> (v6.1.2) et configuration de la source de données avec l'API JSON-RPC de Zabbix." },
+        { title: 'Dashboards Grafana', desc: "Création de tableaux de bord personnalisés dans Grafana : graphique <strong>Space total</strong> et <strong>Space used</strong> pour le suivi de l'occupation disque en temps réel sur les hôtes supervisés." },
+      ],
+      result: "✓ Supervision ICMP opérationnelle avec alertes automatiques. Espace disque surveillé en temps réel. Dashboards Grafana connectés à Zabbix via l'API. Hôtes Windows et Linux supervisés.",
+      docs: ['AP2 Mission 5 – ALIVE_IP (Supervision Zabbix)']
+    }
+  };
+
+  const overlay = document.getElementById('modalOverlay');
+  const mNum = document.getElementById('mNum');
+  const mTitle = document.getElementById('mTitle');
+  const mSubtitle = document.getElementById('mSubtitle');
+  const mThumb = document.getElementById('mThumb');
+  const mBody = document.getElementById('mBody');
+
+  function openModal(id) {
+    const d = MODALS[id];
+    if (!d) return;
+    mNum.textContent = d.num;
+    mTitle.textContent = d.title;
+    mSubtitle.textContent = d.subtitle;
+
+    mThumb.className = 'modal-thumb ' + d.thumbClass;
+    mThumb.innerHTML = `
+      <svg class="thumb-icon" width="90" height="90" viewBox="0 0 24 24" fill="none" stroke="${d.thumbStroke}" stroke-width=".8">${d.thumbPath}</svg>
+      <span class="modal-thumb-label">${d.thumbLabel}</span>`;
+
+    mBody.innerHTML = `
+      <div class="modal-section">
+        <div class="modal-section-title">Technologies utilisées</div>
+        <div class="modal-techs">${d.techs.map(t=>`<span class="tech-tag">${t}</span>`).join('')}</div>
+      </div>
+      <div class="modal-section">
+        <div class="modal-section-title">Contexte</div>
+        <p>${d.context}</p>
+      </div>
+      <div class="modal-section">
+        <div class="modal-section-title">Étapes réalisées</div>
+        <div class="modal-steps">${d.steps.map((s,i)=>`
+          <div class="modal-step">
+            <div class="modal-step-num">${i+1}</div>
+            <div class="modal-step-text"><strong>${s.title}</strong><br>${s.desc}</div>
+          </div>`).join('')}
+        </div>
+      </div>
+      <div class="modal-section">
+        <div class="modal-section-title">Résultats</div>
+        <div class="modal-result">${d.result}</div>
+      </div>
+      <div class="modal-section">
+        <div class="modal-section-title">Documents sources</div>
+        <div class="modal-docs">${d.docs.map(doc=>`
+          <span class="modal-doc"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>${doc}</span>`).join('')}
+        </div>
+      </div>`;
+
+    overlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeModal() {
+    overlay.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  document.querySelectorAll('.project-card[data-modal]').forEach(card => {
+    card.addEventListener('click', () => openModal(card.dataset.modal));
+  });
+  document.getElementById('modalClose').addEventListener('click', closeModal);
+  overlay.addEventListener('click', e => { if (e.target === overlay) closeModal(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+  // Scroll reveal
+  const revealEls = document.querySelectorAll('.reveal');
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); } });
+  }, { threshold: .12 });
+  revealEls.forEach(el => io.observe(el));
+</script>
+</body>
+</html>
